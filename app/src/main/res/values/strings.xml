@@ -1,0 +1,82 @@
+<resources>
+    <string name="app_name">EffiTrack</string>
+
+    <string name="title_login">EffiTrack</string>
+    <string name="title_profile">Профіль</string>
+    <string name="title_work_info">Робоча інформація</string>
+    <string name="title_work_plan">План робіт</string>
+    <string name="title_equipment">Обладнання</string>
+    <string name="title_stats_shift">Показники за зміну</string>
+    <string name="title_history">Історія</string>
+    <string name="title_maintenance_docs">ТО</string>
+    <string name="title_scanning">Сканування ІН</string>
+    <string name="title_check_number">Перевірте номер</string>
+    <string name="title_enter_number">Введіть номер</string>
+
+    <string name="label_table_number">Табельний номер</string>
+    <string name="label_pin_code">ПІН-код</string>
+    <string name="label_action_prefix">Дія: </string>
+    <string name="label_total_work_time">Загальний час роботи</string>
+    <string name="label_total_downtime">Час простою</string>
+    <string name="label_total_setup_time">Час налагодження</string>
+    <string name="label_empty_history">Історія порожня</string>
+    <string name="label_last_maintenance">Дата останнього ТО</string>
+    <string name="label_next_maintenance">Наступне планове ТО</string>
+    <string name="label_work_today">Робота за день: </string>
+    <string name="label_start">Початок: </string>
+    <string name="label_duration">Тривалість: </string>
+    <string name="label_inv_number">Інвентарний номер</string>
+
+    <string name="status_running">У роботі</string>
+    <string name="status_stopped">Простій</string>
+    <string name="status_maintenance">Обслуговування</string>
+    <string name="status_broken">Поломка</string>
+
+    <string name="btn_login">Вхід</string>
+    <string name="btn_logout">Вихід</string>
+    <string name="btn_send_report">Надіслати звіт за зміну</string>
+    <string name="btn_export">Експорт</string>
+    <string name="btn_finish_downtime">Завершити простій</string>
+    <string name="btn_enter_manually">Введіть ІН</string>
+    <string name="btn_grant_permission">Надати доступ</string>
+    <string name="btn_cancel">Скасувати</string>
+    <string name="btn_add_equipment">Додати обладнання</string>
+
+    <string name="hint_search">Пошук</string>
+    <string name="hint_scan">Тримайте ІН у рамці</string>
+
+    <string name="action_default_order">Робота за планом</string>
+    <string name="template_action_downtime">Простій %1$s</string>
+    <string name="template_action_maintenance">Налаштування %1$s</string>
+
+    <string name="prefix_inv">Інв. №</string>
+    <string name="prefix_shop">Цех №</string>
+    <string name="prefix_active_equipment">"Активне обладнання - "</string>
+    
+    <string name="msg_login_success">Успішний вхід! 🚀</string>
+    <string name="msg_sending">Відправка...</string>
+    <string name="msg_report_sent">Звіт успішно надіслано</string>
+    <string name="msg_operator_profession">Інформація підтягується</string>
+    <string name="msg_camera_permission">Необхідний доступ до камери для сканування</string>
+    <string name="msg_equipment_added">Обладнання успішно додано!</string>
+
+    <string name="stub_photo_text">Фото обладнання</string>
+    <string name="stub_no_tasks">Завдань немає</string>
+
+    <string name="fmt_equipment_ids">Інв. № %1$s / Цех № %2$s</string>
+    <string name="fmt_downtime_info">Початок: %1$s\nТривалість: %2$s</string>
+
+    <string name="status_in_progress">В процесі</string>
+    <string name="status_assigned">Назначено</string>
+    <string name="status_done">Виконано</string>
+
+    <string name="title_about_task">Про завдання</string>
+    <string name="label_description">Опис</string>
+    <string name="label_plan_date">План. дата</string>
+    <string name="label_time_plan_fact">Час (план/факт)</string>
+    <string name="label_equipment">Обладнання</string>
+    <string name="label_comment">Коментар</string>
+    <string name="hint_enter_comment">Введіть коментар...</string>
+    <string name="label_fact_time">Фактичний час (хв)</string>
+    <string name="btn_ok">OK</string>
+</resources>
