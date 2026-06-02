@@ -1,9 +1,12 @@
 package com.effitrack.ui.screens.equipment
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +23,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,9 +41,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.effitrack.R
@@ -46,6 +54,7 @@ import com.effitrack.data.model.Equipment
 import com.effitrack.data.model.EquipmentStatus
 import com.effitrack.ui.reusingComponents.AppCard
 import com.effitrack.ui.reusingComponents.AppDivider
+import com.effitrack.ui.screens.status.EffiTrackUniversalStatusScreen
 import com.effitrack.ui.theme.ContentAccent
 import com.effitrack.ui.theme.ContentAlert
 import com.effitrack.ui.theme.ContentBase
@@ -55,8 +64,8 @@ import com.effitrack.ui.theme.ContentSuccess
 import com.effitrack.ui.theme.Dimens
 import com.effitrack.ui.theme.TintAccentGhost
 import com.effitrack.ui.theme.TintAccentLight
-import com.effitrack.ui.theme.TintBase
 import com.effitrack.util.Constants.MSG_REPORT_SENT
+import com.effitrack.util.bounceClick
 import com.effitrack.util.toFormattedWorkTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,57 +91,46 @@ fun EquipmentListScreen(
         if (reportStatus == true) {
             Toast.makeText(context, MSG_REPORT_SENT, Toast.LENGTH_SHORT).show()
             viewModel.clearReportStatus()
-        } else if (errorMessage != null) {
-            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-            viewModel.clearReportStatus()
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(TintBase)
             .statusBarsPadding()
             .padding(horizontal = Dimens.spaceMedium, vertical = Dimens.spaceMedium150)
     ) {
-        HeaderSection(
-            count = equipmentList.size,
-            isSending = isSendingReport,
-            sendReport = { viewModel.sendReport() }
-        )
+        Column {
+            HeaderSection(
+                count = equipmentList.size,
+                isSending = isSendingReport,
+                sendReport = { viewModel.sendReport() }
+            )
 
-        Spacer(modifier = Modifier.height(Dimens.spaceMedium))
+            Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
-        SearchField(
-            query = searchQuery,
-            onQueryChange = { viewModel.onSearchQueryChange(it) }
-        )
+            SearchField(
+                query = searchQuery,
+                onQueryChange = { viewModel.onSearchQueryChange(it) }
+            )
 
-        Spacer(modifier = Modifier.height(Dimens.spaceMedium))
+            Spacer(modifier = Modifier.height(Dimens.spaceMedium))
 
-        FilterSection(
-            selectedStatus = selectedFilter,
-            onSelect = { viewModel.onFilterSelect(it) }
-        )
+            FilterSection(
+                selectedStatus = selectedFilter,
+                onSelect = { viewModel.onFilterSelect(it) }
+            )
 
-        Spacer(modifier = Modifier.height(Dimens.spaceMedium125))
+            Spacer(modifier = Modifier.height(Dimens.spaceMedium125))
 
-        PullToRefreshBox(
-            isRefreshing = isLoading,
-            onRefresh = { viewModel.loadEquipment() },
-            modifier = Modifier.fillMaxSize()
-        ) {
-            if (isLoading && equipmentList.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = ContentAccent)
-                }
-            } else {
+            PullToRefreshBox(
+                isRefreshing = isLoading,
+                onRefresh = { viewModel.loadEquipment() },
+                modifier = Modifier.fillMaxSize()
+            ) {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(Dimens.spaceSmall150),
-                    contentPadding = PaddingValues(bottom = Dimens.spaceExtraLarge312),
+                    contentPadding = PaddingValues(bottom = Dimens.spaceExtraXLarge170),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(equipmentList) { equipment ->
@@ -144,6 +142,13 @@ fun EquipmentListScreen(
                 }
             }
         }
+    }
+    AnimatedVisibility(
+        visible = isLoading && equipmentList.isEmpty(),
+        enter = fadeIn(),
+        exit = fadeOut(animationSpec = tween(durationMillis = 800))
+    ) {
+        EffiTrackUniversalStatusScreen()
     }
 }
 
@@ -213,6 +218,9 @@ fun HeaderSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchField(query: String, onQueryChange: (String) -> Unit) {
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     TextField(
         value = query,
         onValueChange = onQueryChange,
@@ -221,8 +229,8 @@ fun SearchField(query: String, onQueryChange: (String) -> Unit) {
             .clip(RoundedCornerShape(Dimens.spaceMedium)),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = TintAccentLight,
-            unfocusedContainerColor = TintAccentLight,
-            disabledContainerColor = TintAccentLight,
+            unfocusedContainerColor = TintAccentLight.copy(alpha = 0.5f),
+            disabledContainerColor = TintAccentLight.copy(alpha = 0.5f),
 
             focusedTextColor = ContentBase,
             unfocusedTextColor = ContentBase,
@@ -242,6 +250,13 @@ fun SearchField(query: String, onQueryChange: (String) -> Unit) {
                 tint = ContentSecondary
             )
         },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
+            }
+        ),
         singleLine = true
     )
 }
@@ -287,7 +302,7 @@ fun FilterCapsule(
                 shape = RoundedCornerShape(Dimens.spaceMedium)
             )
             .background(if (isSelected) color.copy(alpha = 0.1f) else Color.Transparent)
-            .clickable { onClick() },
+            .bounceClick { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Icon(
@@ -317,8 +332,15 @@ fun EquipmentItem(equipment: Equipment, onClick: () -> Unit) {
     } else {
         when (equipment.status) {
             EquipmentStatus.RUNNING -> stringResource(R.string.action_default_order)
-            EquipmentStatus.DOWNTIME -> stringResource(R.string.template_action_downtime, durationString)
-            EquipmentStatus.SETUP -> stringResource(R.string.template_action_maintenance, durationString)
+            EquipmentStatus.DOWNTIME -> stringResource(
+                R.string.template_action_downtime,
+                durationString
+            )
+
+            EquipmentStatus.SETUP -> stringResource(
+                R.string.template_action_maintenance,
+                durationString
+            )
         }
     }
 
@@ -343,7 +365,11 @@ fun EquipmentItem(equipment: Equipment, onClick: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(Dimens.spaceXXSmall400))
                     Text(
-                        text = "${stringResource(R.string.prefix_inv)} ${equipment.inventoryNumber} / ${stringResource(R.string.prefix_shop)}${equipment.shopNumber}",
+                        text = "${stringResource(R.string.prefix_inv)} ${equipment.inventoryNumber} / ${
+                            stringResource(
+                                R.string.prefix_shop
+                            )
+                        }${equipment.shopNumber}",
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = ContentSecondary,
                             fontSize = 13.sp

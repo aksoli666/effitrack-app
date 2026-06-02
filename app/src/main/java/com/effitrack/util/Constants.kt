@@ -1,8 +1,6 @@
 package com.effitrack.util
 
 object Constants {
-    const val BASE_URL = "https://effitrack-api.onrender.com/api/"
-
     const val EMPTY_STRING = ""
     const val SPACE = " "
     const val DASH = "-"
@@ -27,9 +25,19 @@ object Constants {
     const val URL_REPORTS_SEND = "reports/send/{userId}"
     const val URL_TASKS_UPDATE = "tasks/{id}"
     const val URL_REPORTS_EQUIPMENT = "reports/equipment/{userId}"
+    const val URL_EQUIPMENT_UPDATE = "equipment/{id}"
+    const val URL_EQUIPMENT_AI_ANALYSIS = "equipment/{id}/ai-analysis"
 
     const val HEADER_AUTHORIZATION = "Authorization"
     const val TOKEN_PREFIX_BEARER = "Bearer "
+    const val TOAST_LOGIN_AGAIN = "Сесія закінчилася, увійдіть знову"
+    const val NETWORK_ERROR = "З'єднання відсутнє, підключіться до мережі"
+    const val SERVER_ERROR = "Сервер тимчасово не працює. Завітайте пізніше"
+    const val SERVER_RETRY_BTN = "Оновити"
+    const val OPEN_STATUS_SCREEN = "OPEN_STATUS_SCREEN"
+    const val ERROR_MESSAGE = "ERROR_MESSAGE"
+    const val ENCODE_TYPE = "UTF-8"
+
 
     const val PARAM_ID = "id"
     const val PARAM_USER_ID = "userId"
@@ -44,6 +52,7 @@ object Constants {
     const val ROUTE_MAIN = "main"
     const val ROUTE_EQUIPMENT_DETAILS = "equipment_details/{id}"
     const val ROUTE_SCANNER = "scanner"
+    const val ROUTE_UNIVERSAL_STATUS = "universal_status"
 
     const val ERR_EMPTY_FIELDS = "Введіть табельний номер та PIN"
     const val ERR_LOGIN_FAILED = "Помилка входу: перевірте дані"

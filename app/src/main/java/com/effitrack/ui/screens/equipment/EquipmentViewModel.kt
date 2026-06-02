@@ -10,9 +10,9 @@ import com.effitrack.data.model.Equipment
 import com.effitrack.data.model.EquipmentStatus
 import com.effitrack.data.remote.RetrofitClient
 import com.effitrack.util.Constants.EMPTY_STRING
-import com.effitrack.util.Constants.ERR_LOGIN_FAILED
 import com.effitrack.util.Constants.ERR_PREFIX
 import com.effitrack.util.Constants.ERR_SEND_REPORT
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class EquipmentViewModel : ViewModel() {
@@ -24,7 +24,7 @@ class EquipmentViewModel : ViewModel() {
     var selectedFilter by mutableStateOf<EquipmentStatus?>(null)
     var reportSentStatus by mutableStateOf<Boolean?>(null)
 
-    var isLoading by mutableStateOf(false)
+    var isLoading by mutableStateOf(true)
     var errorMessage by mutableStateOf<String?>(null)
 
     var isSendingReport by mutableStateOf(false)
@@ -34,7 +34,7 @@ class EquipmentViewModel : ViewModel() {
         val userId = UserSession.currentUserId ?: return
         isLoading = true
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val response = RetrofitClient.api.getUserEquipment(userId)
 
             if (response.isSuccessful && response.body() != null) {
@@ -62,7 +62,7 @@ class EquipmentViewModel : ViewModel() {
         errorMessage = null
         reportSentStatus = null
         isSendingReport = true
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val response = RetrofitClient.api.sendEquipmentReport(userId)
             if (response.isSuccessful) {
                 reportSentStatus = true

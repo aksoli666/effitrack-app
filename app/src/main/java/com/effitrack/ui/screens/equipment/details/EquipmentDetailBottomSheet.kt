@@ -19,8 +19,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.BottomSheetDefaults
@@ -30,21 +34,32 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
@@ -68,6 +83,8 @@ import com.effitrack.ui.theme.TintAccentGhost
 import com.effitrack.ui.theme.TintAccentHard
 import com.effitrack.ui.theme.TintAccentLight
 import com.effitrack.util.Constants.DASH
+import com.effitrack.util.bounceClick
+import kotlinx.coroutines.delay
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,7 +108,11 @@ fun EquipmentDetailBottomSheet(
                 .fillMaxHeight(0.92f)
                 .fillMaxWidth()
         ) {
-            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
                 when {
                     state.isLoading -> {
                         CircularProgressIndicator(
@@ -99,6 +120,7 @@ fun EquipmentDetailBottomSheet(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
+
                     state.equipment != null -> {
                         Column(
                             modifier = Modifier
@@ -114,6 +136,17 @@ fun EquipmentDetailBottomSheet(
 
                             if (state.equipment!!.status != EquipmentStatus.RUNNING) {
                                 DowntimeCard(state, onFinishClick = { viewModel.finishDowntime() })
+
+                                EquipmentCommentCard(
+                                    comment = state.comment,
+                                    onCommentChange = { viewModel.updateCommentLocal(it) },
+                                    onSave = { viewModel.onCommentFocusLost() }
+                                )
+
+                                EquipmentAiAnalysisCard(
+                                    state = state,
+                                    onHeaderClick = { viewModel.triggerAiAnalysis() }
+                                )
                             }
 
                             StatsCard(state)
@@ -200,7 +233,11 @@ private fun HeaderCard(state: EquipmentDetailState, viewModel: EquipmentDetailVi
             Spacer(modifier = Modifier.height(Dimens.spaceXXSmall400))
 
             Text(
-                text = stringResource(R.string.fmt_equipment_ids, equipment.inventoryNumber, equipment.shopNumber),
+                text = stringResource(
+                    R.string.fmt_equipment_ids,
+                    equipment.inventoryNumber,
+                    equipment.shopNumber
+                ),
                 color = ContentSecondary,
                 fontSize = Dimens.fontSizeSmall,
                 modifier = Modifier.fillMaxWidth(),
@@ -220,6 +257,157 @@ private fun HeaderCard(state: EquipmentDetailState, viewModel: EquipmentDetailVi
                     EquipmentStatus.DOWNTIME -> ContentAlert
                     EquipmentStatus.SETUP -> ContentCaution
                 }
+            )
+        }
+    }
+}
+
+@Composable
+private fun EquipmentCommentCard(
+    comment: String,
+    onCommentChange: (String) -> Unit,
+    onSave: () -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+    var isFocused by remember { mutableStateOf(false) }
+
+    TextField(
+        value = comment,
+        onValueChange = onCommentChange,
+        label = {
+            Text(
+                text = stringResource(R.string.label_comment),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = Dimens.spaceXXSmall400)
+            )
+        },
+        placeholder = {
+            Text(
+                stringResource(R.string.hint_enter_comment),
+                color = ContentSecondary.copy(alpha = 0.5f)
+            )
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Dimens.spaceExtraLarge312)
+            .onFocusChanged { focusState ->
+                isFocused = focusState.isFocused
+                if (!focusState.isFocused) {
+                    onSave()
+                }
+            },
+        trailingIcon = if (isFocused) {
+            {
+                IconButton(onClick = {
+                    onSave()
+                    focusManager.clearFocus()
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = ContentSecondary
+                    )
+                }
+            }
+        } else null,
+        textStyle = MaterialTheme.typography.bodyLarge,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = {
+            onSave()
+            focusManager.clearFocus()
+        }),
+        shape = RoundedCornerShape(Dimens.spaceMedium),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = TintAccentGhost,
+            unfocusedContainerColor = TintAccentGhost.copy(alpha = 0.5f),
+            disabledContainerColor = TintAccentGhost.copy(alpha = 0.5f),
+            errorContainerColor = TintAccentGhost.copy(alpha = 0.5f),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            errorIndicatorColor = Color.Transparent,
+            focusedTextColor = ContentBase,
+            unfocusedTextColor = ContentBase,
+            cursorColor = ContentAccent,
+            focusedLabelColor = ContentSecondary,
+            unfocusedLabelColor = ContentSecondary
+        )
+    )
+}
+
+@Composable
+private fun EquipmentAiAnalysisCard(
+    state: EquipmentDetailState,
+    onHeaderClick: () -> Unit
+) {
+    val dots = remember { mutableStateOf(".") }
+    if (state.isAiGenerating) {
+        LaunchedEffect(Unit) {
+            while (true) {
+                dots.value = when (dots.value) {
+                    "." -> ".."
+                    ".." -> "..."
+                    else -> "."
+                }
+                delay(500)
+            }
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .bounceClick { onHeaderClick() },
+        shape = RoundedCornerShape(Dimens.spaceSmall150),
+        colors = CardDefaults.cardColors(containerColor = TintAccentGhost.copy(alpha = 0.5f)),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = Dimens.spaceXXSmall,
+                    color = TintAccentLight,
+                    shape = RoundedCornerShape(Dimens.spaceSmall150)
+                )
+                .padding(Dimens.spaceMedium)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Face,
+                    contentDescription = null,
+                    tint = ContentAccent,
+                    modifier = Modifier.size(Dimens.spaceLarge)
+                )
+                Spacer(modifier = Modifier.width(Dimens.spaceSmall))
+                Text(
+                    text = stringResource(R.string.ai_analysis),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = ContentBase
+                )
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.spaceMedium))
+
+            val displayText = when {
+                state.isAiGenerating -> dots.value
+                !state.equipment?.aiAnalysis.isNullOrBlank() -> state.equipment.aiAnalysis
+                else -> stringResource(R.string.ai_analysis_hint)
+            }
+
+            Text(
+                text = displayText,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                ),
+                color = if (state.equipment?.aiAnalysis.isNullOrBlank() && !state.isAiGenerating)
+                    ContentSecondary.copy(alpha = 0.6f) else ContentBase
             )
         }
     }
@@ -335,9 +523,18 @@ private fun StatRow(label: String, value: String, indicatorColor: Color?) {
             } else {
                 Spacer(modifier = Modifier.width(Dimens.spaceSmall150))
             }
-            Text(text = label, color = ContentBase.copy(alpha = 0.9f), fontSize = Dimens.fontSizeSmall)
+            Text(
+                text = label,
+                color = ContentBase.copy(alpha = 0.9f),
+                fontSize = Dimens.fontSizeSmall
+            )
         }
-        Text(text = value, color = ContentBase, fontWeight = FontWeight.Medium, fontSize = Dimens.fontSizeSmall)
+        Text(
+            text = value,
+            color = ContentBase,
+            fontWeight = FontWeight.Medium,
+            fontSize = Dimens.fontSizeSmall
+        )
     }
 }
 

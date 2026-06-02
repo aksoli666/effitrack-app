@@ -52,7 +52,7 @@
     <string name="prefix_inv">Інв. №</string>
     <string name="prefix_shop">Цех №</string>
     <string name="prefix_active_equipment">"Активне обладнання - "</string>
-    
+
     <string name="msg_login_success">Успішний вхід! 🚀</string>
     <string name="msg_sending">Відправка...</string>
     <string name="msg_report_sent">Звіт успішно надіслано</string>
@@ -79,4 +79,6 @@
     <string name="hint_enter_comment">Введіть коментар...</string>
     <string name="label_fact_time">Фактичний час (хв)</string>
     <string name="btn_ok">OK</string>
+    <string name="ai_analysis">Аналіз AI-помічника</string>
+    <string name="ai_analysis_hint">Натисніть на заголовок для отримання AI-аналізу поломки.</string>
 </resources>

@@ -2,7 +2,6 @@ package com.effitrack.ui.reusingComponents
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -23,6 +22,7 @@ import com.effitrack.ui.theme.ContentBase
 import com.effitrack.ui.theme.Dimens
 import com.effitrack.ui.theme.TintAccentHard
 import com.effitrack.ui.theme.TintAccentLight
+import com.effitrack.util.bounceClick
 
 @Composable
 fun BottomBar(
@@ -63,7 +63,7 @@ fun BottomBar(
                         .background(
                             if (isSelected) TintAccentLight else Color.Transparent
                         )
-                        .clickable { onItemSelected(index) },
+                        .bounceClick { onItemSelected(index) },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

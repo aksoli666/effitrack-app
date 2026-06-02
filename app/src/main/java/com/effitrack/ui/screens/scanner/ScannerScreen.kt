@@ -13,7 +13,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,9 +29,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
@@ -46,8 +45,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.effitrack.R
+import com.effitrack.ui.reusingComponents.AppButton
+import com.effitrack.ui.reusingComponents.ButtonType
 import com.effitrack.ui.theme.ContentBase
 import com.effitrack.ui.theme.Dimens
 import com.effitrack.ui.theme.TintAccentGhost
@@ -79,6 +81,7 @@ fun ScannerScreen(
                     val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
                     toneGen.startTone(ToneGenerator.TONE_PROP_BEEP)
                 }
+
                 is ScannerEffect.NavigateToDetails -> {
                     Toast.makeText(
                         context,
@@ -106,6 +109,7 @@ fun ScannerScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         CameraPreview(
+            isScanningActive = !uiState.isBottomSheetVisible,
             onTextFound = { code ->
                 viewModel.onCodeScanned(code)
             }
@@ -142,19 +146,15 @@ fun ScannerScreen(
                 )
             }
 
-            Box(
+            AppButton(
+                text = stringResource(R.string.btn_enter_manually),
+                onClick = { viewModel.onManualEntryClicked() },
                 modifier = Modifier
-                    .clip(RoundedCornerShape(Dimens.spaceMedium))
-                    .background(TintAccentHard)
-                    .clickable { viewModel.onManualEntryClicked() }
-                    .padding(horizontal = Dimens.spaceLarge, vertical = Dimens.spaceMedium)
-            ) {
-                Text(
-                    text = stringResource(R.string.btn_enter_manually),
-                    color = ContentBase,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+                    .padding(bottom = Dimens.spaceLarge125)
+                    .padding(horizontal = Dimens.spaceMedium),
+                color = ContentBase,
+                type = ButtonType.OUTLINE,
+            )
         }
 
         if (uiState.isBottomSheetVisible) {
@@ -170,24 +170,26 @@ fun ScannerScreen(
 
 @Composable
 fun CameraPreview(
+    isScanningActive: Boolean,
     onTextFound: (String) -> Unit
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
+
+    val currentOnTextFound by rememberUpdatedState(onTextFound)
+    val currentIsScanningActive by rememberUpdatedState(isScanningActive)
 
     AndroidView(
         factory = { ctx ->
-            PreviewView(ctx).apply {
+            val previewView = PreviewView(ctx).apply {
                 this.scaleType = PreviewView.ScaleType.FILL_CENTER
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
             }
-        },
-        modifier = Modifier.fillMaxSize(),
-        update = { previewView ->
+
             val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
             cameraProviderFuture.addListener({
@@ -197,12 +199,17 @@ fun CameraPreview(
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
-                @Suppress("DEPRECATION") val imageAnalyzer = ImageAnalysis.Builder()
+                @Suppress("DEPRECATION")
+                val imageAnalyzer = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .setTargetResolution(Size(1280, 720))
                     .build()
                     .also {
-                        it.setAnalyzer(cameraExecutor, TextAnalyzer(onTextFound))
+                        it.setAnalyzer(cameraExecutor, TextAnalyzer { text ->
+                            if (currentIsScanningActive) {
+                                currentOnTextFound(text)
+                            }
+                        })
                     }
 
                 cameraProvider.unbindAll()
@@ -213,7 +220,10 @@ fun CameraPreview(
                     imageAnalyzer
                 )
             }, ContextCompat.getMainExecutor(context))
-        }
+
+            previewView
+        },
+        modifier = Modifier.fillMaxSize()
     )
 }
 

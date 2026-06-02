@@ -1,7 +1,6 @@
 package com.effitrack.ui.screens.profile.taskDetails
 
 import android.app.DatePickerDialog
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +23,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -82,6 +80,7 @@ import com.effitrack.util.Constants.DATE_FORMAT_ISO
 import com.effitrack.util.Constants.OLD_VALUE
 import com.effitrack.util.Constants.SLASH
 import com.effitrack.util.Constants.TIME_M_SHORT
+import com.effitrack.util.bounceClick
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -227,13 +226,16 @@ private fun TaskHeaderCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(modifier = Modifier.clickable { datePickerDialog.show() }) {
+                Column {
                     Text(
                         text = stringResource(R.string.label_plan_date),
                         color = ContentSecondary,
                         fontSize = Dimens.fontSizeSmall
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.bounceClick { datePickerDialog.show() }
+                    ) {
                         Text(
                             text = task.plannedDate.substringBefore(OLD_VALUE),
                             color = ContentBase,
@@ -245,22 +247,24 @@ private fun TaskHeaderCard(
                             contentDescription = null,
                             tint = ContentAccent,
                             modifier = Modifier
-                                .size(Dimens.spaceSmall)
                                 .padding(start = Dimens.spaceXXSmall400)
+                                .size(Dimens.spaceSmall175)
                         )
                     }
                 }
 
                 Column(
                     horizontalAlignment = Alignment.End,
-                    modifier = Modifier.clickable { showTimeDialog = true }
                 ) {
                     Text(
                         text = stringResource(R.string.label_time_plan_fact),
                         color = ContentSecondary,
                         fontSize = Dimens.fontSizeSmall
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.bounceClick { showTimeDialog = true }
+                    ) {
                         Text(
                             text = "${task.estimatedMinutes} $SLASH ${task.actualMinutes} $TIME_M_SHORT",
                             color = ContentBase,
@@ -272,8 +276,8 @@ private fun TaskHeaderCard(
                             contentDescription = null,
                             tint = ContentAccent,
                             modifier = Modifier
-                                .size(Dimens.spaceSmall)
                                 .padding(start = Dimens.spaceXXSmall400)
+                                .size(Dimens.spaceSmall175)
                         )
                     }
                 }
@@ -345,7 +349,11 @@ private fun TaskEquipmentCard(equipment: Equipment) {
                     fontSize = Dimens.fontSizeStandard
                 )
                 Text(
-                    text = "${stringResource(R.string.prefix_inv)} ${equipment.inventoryNumber} $SLASH ${stringResource(R.string.prefix_shop)}${equipment.shopNumber}",
+                    text = "${stringResource(R.string.prefix_inv)} ${equipment.inventoryNumber} $SLASH ${
+                        stringResource(
+                            R.string.prefix_shop
+                        )
+                    }${equipment.shopNumber}",
                     color = ContentSecondary,
                     fontSize = Dimens.fontSizeSmall
                 )
@@ -423,7 +431,7 @@ private fun TaskCommentCard(
         }),
         shape = RoundedCornerShape(Dimens.spaceMedium),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = TintAccentGhost.copy(alpha = 0.5f),
+            focusedContainerColor = TintAccentGhost,
             unfocusedContainerColor = TintAccentGhost.copy(alpha = 0.5f),
             disabledContainerColor = TintAccentGhost.copy(alpha = 0.5f),
             errorContainerColor = TintAccentGhost.copy(alpha = 0.5f),

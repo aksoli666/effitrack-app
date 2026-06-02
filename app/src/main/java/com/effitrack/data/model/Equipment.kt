@@ -18,18 +18,29 @@ data class Equipment(
     @Json(name = "currentStatusDuration") val currentStatusDuration: Int = 0,
     @Json(name = "lastMaintenance") val lastMaintenance: String? = null,
     @Json(name = "nextMaintenance") val nextMaintenance: String? = null,
-    @Json(name = "lastStatusChange") val lastStatusChange: String? = null
+    @Json(name = "lastStatusChange") val lastStatusChange: String? = null,
+    @Json(name = "operatorComment") val operatorComment: String? = null,
+    @Json(name = "aiAnalysis") val aiAnalysis: String? = null
 )
 
 enum class EquipmentStatus {
-    @Json(name = "RUNNING") RUNNING,
-    @Json(name = "DOWNTIME") DOWNTIME,
-    @Json(name = "SETUP") SETUP
+    @Json(name = "RUNNING")
+    RUNNING,
+
+    @Json(name = "DOWNTIME")
+    DOWNTIME,
+
+    @Json(name = "SETUP")
+    SETUP
 }
 
 data class EquipmentStatusUpdate(
     @Json(name = "status") val status: EquipmentStatus,
     @Json(name = "reason") val reason: String
+)
+
+data class EquipmentUpdateRequest(
+    @Json(name = "operatorComment") val operatorComment: String
 )
 
 data class EquipmentDetailState(
@@ -44,7 +55,9 @@ data class EquipmentDetailState(
     val duration: String = EMPTY_STRING,
     val lastMaintenance: String = EMPTY_STRING,
     val nextMaintenance: String = EMPTY_STRING,
-    val history: List<HistoryItem> = emptyList()
+    val history: List<HistoryItem> = emptyList(),
+    val comment: String = EMPTY_STRING,
+    val isAiGenerating: Boolean = false,
 )
 
 data class HistoryItem(

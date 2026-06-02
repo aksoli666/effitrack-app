@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -23,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import com.effitrack.R
 import com.effitrack.ui.reusingComponents.AppButton
 import com.effitrack.ui.reusingComponents.AppTextField
@@ -73,6 +75,7 @@ fun ScannerBottomSheet(
                 value = uiState.scannedCode,
                 onValueChange = onCodeChanged,
                 label = stringResource(R.string.label_inv_number),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
             )
 
             Box(

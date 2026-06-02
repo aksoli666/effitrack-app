@@ -2,23 +2,29 @@ package com.effitrack.data.remote
 
 import com.effitrack.data.model.Equipment
 import com.effitrack.data.model.EquipmentStatusUpdate
+import com.effitrack.data.model.EquipmentUpdateRequest
 import com.effitrack.data.model.LoginRequest
 import com.effitrack.data.model.Task
 import com.effitrack.data.model.TaskCompleteRequest
 import com.effitrack.data.model.TaskUpdateRequest
 import com.effitrack.data.model.User
+import com.effitrack.util.Constants.FIELD_ID
 import com.effitrack.util.Constants.PARAM_ID
 import com.effitrack.util.Constants.PARAM_INV
 import com.effitrack.util.Constants.PARAM_TASK_ID
 import com.effitrack.util.Constants.PARAM_USER_ID
 import com.effitrack.util.Constants.URL_AUTH_LOGIN
+import com.effitrack.util.Constants.URL_EQUIPMENT_AI_ANALYSIS
 import com.effitrack.util.Constants.URL_EQUIPMENT_BY_ID
 import com.effitrack.util.Constants.URL_EQUIPMENT_SEARCH
 import com.effitrack.util.Constants.URL_EQUIPMENT_STATUS
+import com.effitrack.util.Constants.URL_EQUIPMENT_UPDATE
+import com.effitrack.util.Constants.URL_REPORTS_EQUIPMENT
 import com.effitrack.util.Constants.URL_REPORTS_SEND
 import com.effitrack.util.Constants.URL_TASKS_BY_USER
 import com.effitrack.util.Constants.URL_TASKS_COMPLETE
 import com.effitrack.util.Constants.URL_TASKS_START
+import com.effitrack.util.Constants.URL_TASKS_UPDATE
 import com.effitrack.util.Constants.URL_USERS_EQUIPMENT
 import com.effitrack.util.Constants.URL_USERS_PROFILE
 import okhttp3.ResponseBody
@@ -89,12 +95,23 @@ interface ApiService {
         @Path(PARAM_USER_ID) userId: Long
     ): Response<ResponseBody>
 
-    @PUT("tasks/{id}")
+    @PUT(URL_TASKS_UPDATE)
     suspend fun updateTaskDetails(
-        @Path("id") id: Long,
+        @Path(FIELD_ID) id: Long,
         @Body request: TaskUpdateRequest
     ): Response<Task>
 
-    @POST("reports/equipment/{userId}")
-    suspend fun sendEquipmentReport(@Path("userId") userId: Long): Response<ResponseBody>
+    @POST(URL_REPORTS_EQUIPMENT)
+    suspend fun sendEquipmentReport(@Path(PARAM_USER_ID) userId: Long): Response<ResponseBody>
+
+    @PUT(URL_EQUIPMENT_UPDATE)
+    suspend fun updateEquipmentDetails(
+        @Path(PARAM_ID) equipmentId: Long,
+        @Body request: EquipmentUpdateRequest
+    ): Response<Equipment>
+
+    @POST(URL_EQUIPMENT_AI_ANALYSIS)
+    suspend fun triggerAiAnalysis(
+        @Path(PARAM_ID) equipmentId: Long
+    ): Response<Equipment>
 }

@@ -38,8 +38,10 @@ object Dimens {
     val spaceLarge187: Dp = 60.dp
     val spaceLarge200: Dp = 64.dp
     val spaceExtraLarge312: Dp = 100.dp
+    val spaceExtraLarge110: Dp = 116.dp
 
     val spaceExtraXLarge170: Dp = 150.dp
+    val spaceExtraXLarge142: Dp = 180.dp
 
     val sizeButtonWidthSmall: Dp = 120.dp
     val sizeHeaderImageHeight: Dp = 180.dp

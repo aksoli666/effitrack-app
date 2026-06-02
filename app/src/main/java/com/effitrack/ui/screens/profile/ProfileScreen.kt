@@ -1,8 +1,9 @@
 package com.effitrack.ui.screens.profile
 
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,7 +62,9 @@ import com.effitrack.util.Constants
 import com.effitrack.util.Constants.SLASH
 import com.effitrack.util.Constants.TIME_H_SHORT
 import com.effitrack.util.Constants.TIME_M_SHORT
+import com.effitrack.util.bounceClick
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -308,7 +311,7 @@ fun TaskItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .bounceClick { onClick() }
             .padding(vertical = Dimens.spaceSmall),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
